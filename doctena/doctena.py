@@ -9,11 +9,12 @@ proxy_port = ""
 proxy_user = ""
 proxy_pass = ""
 
+
 country = "Luxembourg"
 base_url = "https://www.doctena.lu/fr/orthodontiste/luxembourg?sort_by=proximity&doctorLanguage=fr&page={}"
 
 # Output CSV
-csv_filename = "doctena_dokter.csv"
+csv_filename = "doctena_dokter_new.csv"
 
 async def main():
     async with async_playwright() as p:
@@ -75,6 +76,25 @@ async def main():
                         zipcode = zipcode_city[0]
                         city = zipcode_city[1] if len(zipcode_city) > 1 else ""
 
+                    # === Full address (alamat lengkap)
+                    alamat_full_elem = await block.query_selector("p.dsg-no-mg-bottom")
+                    alamat_lengkap = await alamat_full_elem.inner_text() if alamat_full_elem else ""
+
+                    # === Speciality
+                    speciality_elem = await block.query_selector("p.Search__result-speciality")
+                    speciality_links = await speciality_elem.query_selector_all("a") if speciality_elem else []
+                    speciality_list = [await a.inner_text() for a in speciality_links]
+                    speciality = ", ".join(speciality_list)
+
+                    # results.append({
+                    #     "Nama Lengkap": nama_lengkap,
+                    #     "First Name": first_name,
+                    #     "Last Name": last_name,
+                    #     "Address 2": address2,
+                    #     "ZIP": zipcode,
+                    #     "City": city,
+                    #     "Country": country
+                    # })
                     results.append({
                         "Nama Lengkap": nama_lengkap,
                         "First Name": first_name,
@@ -82,7 +102,9 @@ async def main():
                         "Address 2": address2,
                         "ZIP": zipcode,
                         "City": city,
-                        "Country": country
+                        "Country": country,
+                        "Alamat Lengkap": alamat_lengkap,
+                        "Speciality": speciality
                     })
 
                 except Exception as e:
@@ -92,16 +114,38 @@ async def main():
             print(f"✅ Halaman {page_number} selesai. Total data sejauh ini: {len(results)}\n")
             page_number += 1
 
+            # Simpan ke CSV
+            # with open(csv_filename, mode="w", newline="", encoding="utf-8") as file:
+            #     writer = csv.DictWriter(file, fieldnames=[
+            #         "Nama Lengkap", "First Name", "Last Name", "Address 2", "ZIP", "City", "Country"
+            #     ])
+            #     writer.writeheader()
+            #     writer.writerows(results)
+
+            # print(f"✅ Data disimpan ke {csv_filename} ({len(results)} baris)")
         await browser.close()
 
-        # Simpan ke CSV
+        # # Simpan ke CSV
+        # with open(csv_filename, mode="w", newline="", encoding="utf-8") as file:
+        #     writer = csv.DictWriter(file, fieldnames=[
+        #         "Nama Lengkap", "First Name", "Last Name", "Address 2", "ZIP", "City", "Country"
+        #     ])
+        #     writer.writeheader()
+        #     writer.writerows(results)
+
         with open(csv_filename, mode="w", newline="", encoding="utf-8") as file:
             writer = csv.DictWriter(file, fieldnames=[
-                "Nama Lengkap", "First Name", "Last Name", "Address 2", "ZIP", "City", "Country"
+                "Nama Lengkap", "First Name", "Last Name", "Address 2", "ZIP", "City", "Country",
+                "Alamat Lengkap", "Speciality"
             ])
             writer.writeheader()
             writer.writerows(results)
 
         print(f"✅ Data disimpan ke {csv_filename} ({len(results)} baris)")
+
+
+
+
+
 
 asyncio.run(main())
