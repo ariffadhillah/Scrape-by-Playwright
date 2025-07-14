@@ -159,7 +159,7 @@ from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
 
 BASE_URL = "https://www.invisalign.ch/fr/find-a-doctor"
-QUERY_BASE = "#v=results&c=Vaud&cy=ch"
+QUERY_BASE = "#v=results&c=Valais&cy=ch"
 QUERY_SUFFIX = "&s=e"
 
 async def fetch_rendered_html(url: str, playwright) -> str:
@@ -283,7 +283,7 @@ async def scrape_all_pages():
 
 
 
-def save_to_csv(results: list, filename: str = "doctors_vaud.csv"):
+def save_to_csv(results: list, filename: str = "doctors_Valais.csv"):
     headers = [
         "Name", "Address", "City", "Zip Code", "Country", "Tel", "Site", "Alamat Lengkap"
     ]
